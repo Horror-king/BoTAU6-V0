@@ -1,6 +1,6 @@
 {
   "facebookAccount": {
-    "email": "hj6117634@gmail.com ",
+    "email": "hassandemo78@gmail.com",
     "password": "zzzxxx",
     "2FASecret": "",
     "i_user": "",
@@ -29,7 +29,7 @@
     ],
     "notes": "if you enable this feature, only the ids in the whiteListIds section can use the bot"
   },
-  "nickNameBot": "BelENe☄️",
+  "nickNameBot": "AlicE☄️",
   "prefix": "-",
   "database": {
     "type": "sqlite",
