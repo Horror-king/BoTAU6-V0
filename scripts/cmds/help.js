@@ -1,4 +1,4 @@
--cmd install help.js const { commands, aliases } = global.GoatBot;
+const { commands, aliases } = global.GoatBot;
 const { getPrefix } = global.utils;
 
 module.exports = {
