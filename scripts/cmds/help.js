@@ -1,134 +1,3 @@
-const { commands, aliases } = global.GoatBot;
-const { getPrefix } = global.utils;
-
-module.exports = {
-    config: {
-        name: "help",
-        version: "1.0",
-        author: "Hassan",
-        countDown: 5,
-        role: 0,
-        shortDescription: "Interactive command help menu",
-        longDescription: "Provides an interactive menu to explore commands and get detailed info",
-        category: "Info 📜",
-        guide: "{pn}"
-    },
-
-    onStart: async function ({ message, args, api, event }) {
-        const { threadID, senderID } = event;
-        const prefix = getPrefix(threadID);
-        const imageUrl = "https://tinyurl.com/26je7o6c";  // Replace this with the actual URL of your image
-
-        if (args.length === 0) {
-            let categories = {};
-
-            commands.forEach((cmd, name) => {
-                if (cmd.config.role <= 0) { // Only show commands accessible by all users
-                    const category = cmd.config.category || "Uncategorized";
-                    if (!categories[category]) categories[category] = [];
-                    categories[category].push(name);
-                }
-            });
-
-            let categoryList = "Command Categories:\n\n";
-            Object.keys(categories).forEach(category => {
-                categoryList += `• ${category}\n`;
-            });
-            categoryList += `\nReply with the name of a category to see its commands.`;
-
-            const messageID = await api.sendMessage({
-                body: categoryList,
-                attachment: await global.utils.getStreamFromURL(imageUrl)
-            }, threadID, async (error, info) => {
-                global.client.onReply.set(info.messageID, {
-                    author: senderID,
-                    type: "chooseCategory",
-                    categories
-                });
-            });
-        } else {
-            const commandName = args[0].toLowerCase();
-            const command = commands.get(commandName) || commands.get(aliases.get(commandName));
-
-            if (!command) {
-                return message.reply(`Command "${commandName}" not found.`);
-            }
-
-            const { config } = command;
-            const details = `Command: ${config.name}\n` +
-                `Version: ${config.version}\n` +
-                `Author: ${config.author}\n` +
-                `Description: ${config.shortDescription}\n` +
-                `Category: ${config.category}\n` +
-                `Usage: ${config.guide.replace(/{pn}/g, prefix + config.name)}\n`;
-
-            return message.reply(details);
-        }
-    },
-
-    onReply: async function ({ message, event, api }) {
-        const { threadID, messageID, body, senderID } = event;
-        const data = global.client.onReply.get(messageID);
-        const imageUrl = "https://tinyurl.com/26je7o6c";  // Replace this with the actual URL of your image
-
-        if (data.author !== senderID) return;
-
-        switch (data.type) {
-            case "chooseCategory":
-                const category = body.trim();
-                const commandsInCategory = data.categories[category];
-
-                if (!commandsInCategory) {
-                    return api.sendMessage(`Category "${category}" not found. Please reply with a valid category name.`, threadID);
-                }
-
-                let commandList = `Commands in category "${category}":\n\n`;
-                commandsInCategory.forEach(cmd => {
-                    commandList += `• ${cmd}\n`;
-                });
-                commandList += `\nReply with the name of a command to see its details.`;
-
-                api.sendMessage({
-                    body: commandList,
-                    attachment: await global.utils.getStreamFromURL(imageUrl)
-                }, threadID, (error, info) => {
-                    global.client.onReply.set(info.messageID, {
-                        author: senderID,
-                        type: "chooseCommand",
-                        commandsInCategory
-                    });
-                });
-                break;
-
-            case "chooseCommand":
-                const commandName = body.trim().toLowerCase();
-                const command = commands.get(commandName) || commands.get(aliases.get(commandName));
-
-                if (!command) {
-                    return api.sendMessage(`Command "${commandName}" not found. Please reply with a valid command name.`, threadID);
-                }
-
-                const { config } = command;
-                const details = `Command: ${config.name}\n` +
-                    `Version: ${config.version}\n` +
-                    `Author: ${config.author}\n` +
-                    `Description: ${config.shortDescription}\n` +
-                    `Category: ${config.category}\n` +
-                    `Usage: ${config.guide.replace(/{pn}/g, prefix + config.name)}\n`;
-
-                api.sendMessage({
-                    body: details,
-                    attachment: await global.utils.getStreamFromURL(imageUrl)
-                }, threadID);
-                break;
-
-            default:
-                break;
-        }
-
-        api.unsendMessage(messageID);
-    }
-}
 const fs = require("fs-extra");
 const axios = require("axios");
 const path = require("path");
@@ -136,6 +5,13 @@ const { getPrefix } = global.utils;
 const { commands, aliases } = global.GoatBot;
 
 const doNotDelete = "🎀 | 𝑱𝑶𝒴𝑳𝒀𝑵𝑬 𝑨𝑰"; // Decoy string
+
+const fonts = [
+  { bold: "𝗔𝗕𝗖𝗗𝗘𝗙𝗚𝗛𝗜𝗝𝗞𝗟𝗠𝗡𝗢𝗣𝗤𝗥𝗦𝗧𝗨𝗩𝗪𝗫𝗬𝗭", lower: "𝗮𝗯𝗰𝗱𝗲𝗳𝗴𝗵𝗶𝗷𝗸𝗹𝗺𝗻𝗼𝗽𝗾𝗿𝘀𝘁𝘂𝘃𝘄𝘅𝘆𝘇" },
+  { bold: "𝘼𝘽𝘾𝘿𝙀𝙁𝙂𝙃𝙄𝙅𝙆𝙇𝙈𝙉𝙊𝙋𝙌𝙍𝙎𝙏𝙐𝙑𝙒𝙓𝙔𝙕", lower: "𝙖𝙗𝙘𝙙𝙚𝙛𝙜𝙝𝙞𝙟𝙠𝙡𝙢𝙣𝙤𝙥𝙦𝙧𝙨𝙩𝙪𝙫𝙬𝙭𝙮𝙯" },
+  { bold: "𝑨𝑩𝑪𝑫𝑬𝑭𝑮𝑯𝑰𝑱𝑲𝑳𝑴𝑵𝑶𝑷𝑸𝑹𝑺𝑻𝑼𝑽𝑾𝑿𝒀𝒁", lower: "𝒂𝒃𝒄𝒅𝒆𝒇𝒈𝒉𝒊𝒋𝒌𝒍𝒎𝒏𝒐𝒑𝒒𝒓𝒔𝒕𝒖𝒗𝒘𝒙𝒚𝒛" },
+  { bold: "𝓐𝓑𝓒𝓓𝓔𝓕𝓖𝓗𝓘𝓙𝓚𝓛𝓜𝓝𝓞𝓟𝓠𝓡𝓢𝓣𝓤𝓥𝓦𝓧𝓨𝓩", lower: "𝓪𝓫𝓬𝓭𝓮𝓯𝓰𝓱𝓲𝓳𝓴𝓵𝓶𝓷𝓸𝓹𝓺𝓻𝓼𝓽𝓾𝓿𝔀𝔁𝔂𝔃" },
+];
 
 module.exports = {
   config: {
@@ -164,7 +40,7 @@ module.exports = {
 
     if (args.length === 0) {
       const categories = {};
-      let msg = "⚡ Command List ⚡\n";
+      let msg = "• Command List •\n";
 
       for (const [name, value] of commands) {
         if (value.config.role > 1 && role < value.config.role) continue;
@@ -184,7 +60,7 @@ module.exports = {
 
       msg += createColumns(firstHalfCategories, secondHalfCategories, categories);
 
-      msg += `\n⚡✨ | 𝑮𝒓𝒊𝒍𝒍𝒆𝒅'𝒔 𝑨𝒊𝑩𝒐𝑻\n⚡𝗧𝗼𝘁𝗮𝗹 𝗖𝗼𝗺𝗺𝗮𝗻𝗱𝘀 » ${commands.size}`;
+      msg += `\n• Grilled's AiBOT\n• Total Commands » ${commands.size}`;
 
       await message.reply({ body: msg });
     } else {
@@ -192,7 +68,7 @@ module.exports = {
       const command = commands.get(commandName) || commands.get(aliases.get(commandName));
 
       if (!command) {
-        await message.reply(`⚡ Command "${commandName}" not found. ⚡`);
+        await message.reply(`• Command "${commandName}" not found. •`);
       } else {
         const configCommand = command.config;
         const roleText = roleTextToString(configCommand.role);
@@ -201,7 +77,7 @@ module.exports = {
         const guideBody = configCommand.guide?.en || "No guide available.";
         const usage = guideBody.replace(/{p}/g, prefix).replace(/{n}/g, configCommand.name);
 
-        const response = `⚡「 𝗖𝗢𝗠𝗠𝗔𝗡𝗗 𝗛𝗘𝗟𝗣 」⚡\n\n⚡ Name: ${configCommand.name}\n⚡ Author: ${author}\n⚡ Aliases: ${configCommand.aliases ? configCommand.aliases.join(", ") : "None"}\n⚡ Description: ${longDescription}\n⚡ Usage: ${usage}\n⚡ Role: ${roleText}`;
+        const response = `• COMMAND HELP •\n\n• Name: ${configCommand.name}\n• Author: ${author}\n• Aliases: ${configCommand.aliases ? configCommand.aliases.join(", ") : "None"}\n• Description: ${longDescription}\n• Usage: ${usage}\n• Role: ${roleText}`;
 
         await message.reply(response);
       }
@@ -216,16 +92,28 @@ function createColumns(firstHalfCategories, secondHalfCategories, commands) {
 
   for (let i = 0; i < maxLength; i++) {
     if (firstHalfCategories[i]) {
-      columnMsg += `⚡•『 ${firstHalfCategories[i].toUpperCase()} 』•⚡\n`;
-      columnMsg += commands[firstHalfCategories[i]].sort().map(cmd => `- ${cmd}`).join('\n') + '\n';
+      columnMsg += `• ${firstHalfCategories[i].toUpperCase()} •\n`;
+      columnMsg += commands[firstHalfCategories[i]].sort().map(cmd => `- ${applyRandomFont(cmd)}`).join('\n') + '\n';
     }
     if (secondHalfCategories[i]) {
-      columnMsg += `⚡•『 ${secondHalfCategories[i].toUpperCase()} 』•⚡\n`;
-      columnMsg += commands[secondHalfCategories[i]].sort().map(cmd => `- ${cmd}`).join('\n') + '\n';
+      columnMsg += `• ${secondHalfCategories[i].toUpperCase()} •\n`;
+      columnMsg += commands[secondHalfCategories[i]].sort().map(cmd => `- ${applyRandomFont(cmd)}`).join('\n') + '\n';
     }
   }
 
   return columnMsg;
+}
+
+function applyRandomFont(text) {
+  const font = fonts[Math.floor(Math.random() * fonts.length)];
+  return text.split('').map(char => {
+    if (char >= 'A' && char <= 'Z') {
+      return font.bold[char.charCodeAt(0) - 'A'.charCodeAt(0)];
+    } else if (char >= 'a' && char <= 'z') {
+      return font.lower[char.charCodeAt(0) - 'a'.charCodeAt(0)];
+    }
+    return char;
+  }).join('');
 }
 
 function roleTextToString(roleText) {
