@@ -1,52 +1,97 @@
-const axios = require("axios")
+const axios = require('axios');
+const fs = require('fs');
+const path = require('path');
+
 module.exports = {
-	config: {
-		name: "movie",
-		version: "1.1",
-		author: "mahim",
-		countDown: 5,
-		role: 0,
-		shortDescription: {
-			vi: "",
-			en: ""
-		},
-		longDescription: {
-			vi: "",
-			en: ""
-		},
-		category: "information",
-		guide:  {
-			vi: "{pn} movie name",
-			en: "{pn} movie name"
-		}
-		
-	},
+    config: {
+        name: "movie",
+        aliases: ['movieinfo'],
+        author: "Hassan",
+        version: "1.0",
+        shortDescription: "Get information about a movie",
+        longDescription: "Fetch detailed information about a specified movie.",
+        category: "utility",
+        guide: {
+            vi: "",
+            en: ""
+        }
+    },
 
-onStart: async function ({ event, message, getLang, usersData, api, args}) {
+    onStart: async function ({ args, message, getLang }) {
+        try {
+            const movieTitle = args.join(' ');
+            if (!movieTitle) {
+                return message.reply("Please provide a movie title.");
+            }
 
-  let query = args.join(" ")
-  if(!query) return message.reply("Bigay mo ang title ng movie")
-  try{
-  let res = await axios.get(`https://api.popcat.xyz/imdb?q=${encodeURIComponent(query)}`)
-    
-      let title = res.data.title,
-        date = res.data.year,
-        time = res.data.runtime,
-        genres = res.data.genres,
-        director = res.data.director,
-        actors = res.data.actors,
-        plot = res.data.plot
-      var poster = res.data.poster;
-     // console.log(res)
-        message.reply(
-        {
-          body: `Title: ${title}\\Actors: ${actors}\\Release Date: ${date}\\Genres: ${genres}\\Director: ${director}\\Plot: ${plot}`,
-          attachment: await global.utils.getStreamFromURL(poster)})
-  } catch(e){
-    console.log(e)
-    message.reply("Sorry wala akong nakuha na ganyan")
-  }
+            const apiKey = '435fb551';
+            const url = `http://www.omdbapi.com/?t=${encodeURIComponent(movieTitle)}&apikey=${apiKey}`;
 
-            
+            const response = await axios.get(url);
+
+            if (response.data && response.data.Response === "True") {
+                const movieData = response.data;
+                const title = movieData.Title;
+                const year = movieData.Year;
+                const runtime = movieData.Runtime;
+                const genres = movieData.Genre;
+                const director = movieData.Director;
+                const actors = movieData.Actors;
+                const plot = movieData.Plot;
+                const posterUrl = movieData.Poster;
+                const backdropUrl = ''; // OMDB API does not provide backdrop URL. Adjust if using another API.
+
+                const posterPath = path.join('/tmp', `${title.replace(/ /g, "_")}_poster.jpg`);
+                const backdropPath = path.join('/tmp', `${title.replace(/ /g, "_")}_backdrop.jpg`);
+
+                const downloadImage = async (url, filePath) => {
+                    const response = await axios({
+                        url,
+                        responseType: 'stream',
+                    });
+                    return new Promise((resolve, reject) => {
+                        const writer = fs.createWriteStream(filePath);
+                        response.data.pipe(writer);
+                        writer.on('finish', resolve);
+                        writer.on('error', reject);
+                    });
+                };
+
+                const sendImage = async (url, filePath) => {
+                    await downloadImage(url, filePath);
+                    return message.reply({
+                        body: `🎬 Movie: ${title} (${year})\n` +
+                              `⏱️ Runtime: ${runtime}\n` +
+                              `🎭 Genres: ${genres}\n` +
+                              `🎬 Director: ${director}\n` +
+                              `🎭 Actors: ${actors}\n` +
+                              `⭐ IMDB Rating: ${movieData.imdbRating}\n` +
+                              `📖 Plot: ${plot}\n`,
+                        attachment: fs.createReadStream(filePath)
+                    });
+                };
+
+                if (posterUrl && posterUrl !== 'N/A') {
+                    await sendImage(posterUrl, posterPath);
+                } else if (backdropUrl) {
+                    await sendImage(backdropUrl, backdropPath);
+                } else {
+                    return message.reply(
+                        `🎬 Movie: ${title} (${year})\n` +
+                        `⏱️ Runtime: ${runtime}\n` +
+                        `🎭 Genres: ${genres}\n` +
+                        `🎬 Director: ${director}\n` +
+                        `🎭 Actors: ${actors}\n` +
+                        `⭐ IMDB Rating: ${movieData.imdbRating}\n` +
+                        `📖 Plot: ${plot}`
+                    );
+                }
+            } else {
+                return message.reply("Sorry, no information was found for the movie.");
+            }
+        } catch (error) {
+            console.error(error);
+            return message.reply("Sorry, there was an error fetching movie information.");
+        }
+    }
 }
-    
