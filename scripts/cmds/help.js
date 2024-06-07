@@ -6,13 +6,6 @@ const { commands, aliases } = global.GoatBot;
 
 const doNotDelete = "🎀 | 𝑱𝑶𝒴𝑳𝒀𝑵𝑬 𝑨𝑰"; // Decoy string
 
-const fonts = [
-  { bold: "𝗔𝗕𝗖𝗗𝗘𝗙𝗚𝗛𝗜𝗝𝗞𝗟𝗠𝗡𝗢𝗣𝗤𝗥𝗦𝗧𝗨𝗩𝗪𝗫𝗬𝗭", lower: "𝗮𝗯𝗰𝗱𝗲𝗳𝗴𝗵𝗶𝗷𝗸𝗹𝗺𝗻𝗼𝗽𝗾𝗿𝘀𝘁𝘂𝘃𝘄𝘅𝘆𝘇" },
-  { bold: "𝘼𝘽𝘾𝘿𝙀𝙁𝙂𝙃𝙄𝙅𝙆𝙇𝙈𝙉𝙊𝙋𝙌𝙍𝙎𝙏𝙐𝙑𝙒𝙓𝙔𝙕", lower: "𝙖𝙗𝙘𝙙𝙚𝙛𝙜𝙝𝙞𝙟𝙠𝙡𝙢𝙣𝙤𝙥𝙦𝙧𝙨𝙩𝙪𝙫𝙬𝙭𝙮𝙯" },
-  { bold: "𝑨𝑩𝑪𝑫𝑬𝑭𝑮𝑯𝑰𝑱𝑲𝑳𝑴𝑵𝑶𝑷𝑸𝑹𝑺𝑻𝑼𝑽𝑾𝑿𝒀𝒁", lower: "𝒂𝒃𝒄𝒅𝒆𝒇𝒈𝒉𝒊𝒋𝒌𝒍𝒎𝒏𝒐𝒑𝒒𝒓𝒔𝒕𝒖𝒗𝒘𝒙𝒚𝒛" },
-  { bold: "𝓐𝓑𝓒𝓓𝓔𝓕𝓖𝓗𝓘𝓙𝓚𝓛𝓜𝓝𝓞𝓟𝓠𝓡𝓢𝓣𝓤𝓥𝓦𝓧𝓨𝓩", lower: "𝓪𝓫𝓬𝓭𝓮𝓯𝓰𝓱𝓲𝓳𝓴𝓵𝓶𝓷𝓸𝓹𝓺𝓻𝓼𝓽𝓾𝓿𝔀𝔁𝔂𝔃" },
-];
-
 module.exports = {
   config: {
     name: "help",
@@ -60,7 +53,7 @@ module.exports = {
 
       msg += createColumns(firstHalfCategories, secondHalfCategories, categories);
 
-      msg += `\n• Grilled's AiBOT\n• Total Commands » ${commands.size}`;
+      msg += `\n•✨ | 𝑮𝒓𝒊𝒍𝒍𝒆𝒅'𝒔 𝑨𝒊𝑩𝒐𝑻\n• 𝗧𝗼𝘁𝗮𝗹 𝗖𝗼𝗺𝗺𝗮𝗻𝗱𝘀 » ${commands.size}`;
 
       await message.reply({ body: msg });
     } else {
@@ -77,7 +70,7 @@ module.exports = {
         const guideBody = configCommand.guide?.en || "No guide available.";
         const usage = guideBody.replace(/{p}/g, prefix).replace(/{n}/g, configCommand.name);
 
-        const response = `• COMMAND HELP •\n\n• Name: ${configCommand.name}\n• Author: ${author}\n• Aliases: ${configCommand.aliases ? configCommand.aliases.join(", ") : "None"}\n• Description: ${longDescription}\n• Usage: ${usage}\n• Role: ${roleText}`;
+        const response = `•「 𝗖𝗢𝗠𝗠𝗔𝗡𝗗 𝗛𝗘𝗟𝗣 」•\n\n• Name: ${configCommand.name}\n• Author: ${author}\n• Aliases: ${configCommand.aliases ? configCommand.aliases.join(", ") : "None"}\n• Description: ${longDescription}\n• Usage: ${usage}\n• Role: ${roleText}`;
 
         await message.reply(response);
       }
@@ -92,12 +85,12 @@ function createColumns(firstHalfCategories, secondHalfCategories, commands) {
 
   for (let i = 0; i < maxLength; i++) {
     if (firstHalfCategories[i]) {
-      columnMsg += `• ${firstHalfCategories[i].toUpperCase()} •\n`;
-      columnMsg += commands[firstHalfCategories[i]].sort().map(cmd => `- ${applyRandomFont(cmd)}`).join('\n') + '\n';
+      columnMsg += `•『 ${firstHalfCategories[i].toUpperCase()} 』•\n`;
+      columnMsg += commands[firstHalfCategories[i]].sort().map(cmd => `° ${applyRandomFont(cmd)} °`).join('\n') + '\n';
     }
     if (secondHalfCategories[i]) {
-      columnMsg += `• ${secondHalfCategories[i].toUpperCase()} •\n`;
-      columnMsg += commands[secondHalfCategories[i]].sort().map(cmd => `- ${applyRandomFont(cmd)}`).join('\n') + '\n';
+      columnMsg += `•『 ${secondHalfCategories[i].toUpperCase()} 』•\n`;
+      columnMsg += commands[secondHalfCategories[i]].sort().map(cmd => `° ${applyRandomFont(cmd)} °`).join('\n') + '\n';
     }
   }
 
@@ -105,15 +98,21 @@ function createColumns(firstHalfCategories, secondHalfCategories, commands) {
 }
 
 function applyRandomFont(text) {
-  const font = fonts[Math.floor(Math.random() * fonts.length)];
-  return text.split('').map(char => {
-    if (char >= 'A' && char <= 'Z') {
-      return font.bold[char.charCodeAt(0) - 'A'.charCodeAt(0)];
-    } else if (char >= 'a' && char <= 'z') {
-      return font.lower[char.charCodeAt(0) - 'a'.charCodeAt(0)];
-    }
-    return char;
-  }).join('');
+  const fonts = [
+    '𝗔𝗕𝗖𝗗𝗘𝗙𝗚𝗛𝗜𝗝𝗞𝗟𝗠𝗡𝗢𝗣𝗤𝗥𝗦𝗧𝗨𝗩𝗪𝗫𝗬𝗭',
+    '𝖠𝖡𝖢𝖣𝖤𝖥𝖦𝖧𝖨𝖩𝖪𝖫𝖬𝖭𝖮𝖯𝖰𝖱𝖲𝖳𝖴𝖵𝖶𝖷𝖸𝖹',
+    '𝐀𝐁𝐂𝐃𝐄𝐅𝐆𝐇𝐈𝐉𝐊𝐋𝐌𝐍𝐎𝐏𝐐𝐑𝐒𝐓𝐔𝐕𝐖𝐗𝐘𝐙',
+    '𝘈𝘉𝘊𝘋𝘌𝘍𝘎𝘏𝘐𝘑𝘒𝘓𝘔𝘕𝘖𝘗𝘘𝘙𝘚𝘛𝘜𝘝𝘞𝘟𝘠𝘡'
+  ];
+
+  const selectedFont = fonts[Math.floor(Math.random() * fonts.length)];
+
+  const transform = (char) => {
+    const index = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'.indexOf(char.toUpperCase());
+    return index > -1 ? selectedFont[index] : char;
+  };
+
+  return text.split('').map(transform).join('');
 }
 
 function roleTextToString(roleText) {
