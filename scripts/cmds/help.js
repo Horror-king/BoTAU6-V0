@@ -53,7 +53,7 @@ module.exports = {
 
       msg += createColumns(firstHalfCategories, secondHalfCategories, categories);
 
-      msg += `\n•✨ | 𝑮𝒓𝒊𝒍𝒍𝒆𝒅'𝒔 𝑨𝒊𝑩𝒐𝑻\n• 𝗧𝗼𝘁𝗮𝗹 𝗖𝗼𝗺𝗺𝗮𝗻𝗱𝘀 » ${commands.size}`;
+      msg += `\n•✨ | ©𝑮𝒓𝒊𝒍𝒍𝒆𝒅'𝒔 𝑨𝒊𝑩𝒐𝑻\n• Total Commands » ${commands.size}`;
 
       await message.reply({ body: msg });
     } else {
@@ -70,7 +70,7 @@ module.exports = {
         const guideBody = configCommand.guide?.en || "No guide available.";
         const usage = guideBody.replace(/{p}/g, prefix).replace(/{n}/g, configCommand.name);
 
-        const response = `•「 𝗖𝗢𝗠𝗠𝗔𝗡𝗗 𝗛𝗘𝗟𝗣 」•\n\n• Name: ${configCommand.name}\n• Author: ${author}\n• Aliases: ${configCommand.aliases ? configCommand.aliases.join(", ") : "None"}\n• Description: ${longDescription}\n• Usage: ${usage}\n• Role: ${roleText}`;
+        const response = `•「 COMMAND HELP 」•\n\n• Name: ${configCommand.name}\n• Author: ${author}\n• Aliases: ${configCommand.aliases ? configCommand.aliases.join(", ") : "None"}\n• Description: ${longDescription}\n• Usage: ${usage}\n• Role: ${roleText}`;
 
         await message.reply(response);
       }
@@ -86,33 +86,15 @@ function createColumns(firstHalfCategories, secondHalfCategories, commands) {
   for (let i = 0; i < maxLength; i++) {
     if (firstHalfCategories[i]) {
       columnMsg += `•『 ${firstHalfCategories[i].toUpperCase()} 』•\n`;
-      columnMsg += commands[firstHalfCategories[i]].sort().map(cmd => `° ${applyRandomFont(cmd)} °`).join('\n') + '\n';
+      columnMsg += commands[firstHalfCategories[i]].sort().map(cmd => `° ${cmd} °`).join('\n') + '\n';
     }
     if (secondHalfCategories[i]) {
       columnMsg += `•『 ${secondHalfCategories[i].toUpperCase()} 』•\n`;
-      columnMsg += commands[secondHalfCategories[i]].sort().map(cmd => `° ${applyRandomFont(cmd)} °`).join('\n') + '\n';
+      columnMsg += commands[secondHalfCategories[i]].sort().map(cmd => `° ${cmd} °`).join('\n') + '\n';
     }
   }
 
   return columnMsg;
-}
-
-function applyRandomFont(text) {
-  const fonts = [
-    '𝗔𝗕𝗖𝗗𝗘𝗙𝗚𝗛𝗜𝗝𝗞𝗟𝗠𝗡𝗢𝗣𝗤𝗥𝗦𝗧𝗨𝗩𝗪𝗫𝗬𝗭',
-    '𝖠𝖡𝖢𝖣𝖤𝖥𝖦𝖧𝖨𝖩𝖪𝖫𝖬𝖭𝖮𝖯𝖰𝖱𝖲𝖳𝖴𝖵𝖶𝖷𝖸𝖹',
-    '𝐀𝐁𝐂𝐃𝐄𝐅𝐆𝐇𝐈𝐉𝐊𝐋𝐌𝐍𝐎𝐏𝐐𝐑𝐒𝐓𝐔𝐕𝐖𝐗𝐘𝐙',
-    '𝘈𝘉𝘊𝘋𝘌𝘍𝘎𝘏𝘐𝘑𝘒𝘓𝘔𝘕𝘖𝘗𝘘𝘙𝘚𝘛𝘜𝘝𝘞𝘟𝘠𝘡'
-  ];
-
-  const selectedFont = fonts[Math.floor(Math.random() * fonts.length)];
-
-  const transform = (char) => {
-    const index = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'.indexOf(char.toUpperCase());
-    return index > -1 ? selectedFont[index] : char;
-  };
-
-  return text.split('').map(transform).join('');
 }
 
 function roleTextToString(roleText) {
@@ -126,4 +108,4 @@ function roleTextToString(roleText) {
     default:
       return "Unknown role";
   }
-}
+        }
