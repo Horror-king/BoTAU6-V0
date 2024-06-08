@@ -17,81 +17,68 @@ module.exports = {
         }
     },
 
-    onStart: async function ({ args, message, getLang }) {
+    onStart: async function ({ args, message, api, event, getLang }) {
         try {
             const movieTitle = args.join(' ');
             if (!movieTitle) {
-                return message.reply("Please provide a movie title.");
+                return api.sendMessage("Please provide a movie title.", event.threadID);
             }
 
-            const apiKey = '435fb551';
-            const url = `http://www.omdbapi.com/?t=${encodeURIComponent(movieTitle)}&apikey=${apiKey}`;
+            await api.sendMessage("please wait⏳", event.threadID);
 
-            const response = await axios.get(url);
+            // Wait for 3 seconds
+            await new Promise(resolve => setTimeout(resolve, 3000));
+
+            const movieInfoUrl = `https://hassan-mofin-1.onrender.com/movieinfo?title=${encodeURIComponent(movieTitle)}`;
+            console.log(`Fetching movie info from: ${movieInfoUrl}`);
+
+            const response = await axios.get(movieInfoUrl);
+            console.log('Movie info response:', response.data);
 
             if (response.data && response.data.Response === "True") {
                 const movieData = response.data;
-                const title = movieData.Title;
-                const year = movieData.Year;
-                const runtime = movieData.Runtime;
-                const genres = movieData.Genre;
-                const director = movieData.Director;
-                const actors = movieData.Actors;
-                const plot = movieData.Plot;
-                const posterUrl = movieData.Poster;
-                const backdropUrl = ''; // OMDB API does not provide backdrop URL. Adjust if using another API.
+                const { Title, Year, Runtime, Genre, Director, Actors, Plot, Poster, imdbRating, BoxOffice, Awards } = movieData;
 
-                const posterPath = path.join('/tmp', `${title.replace(/ /g, "_")}_poster.jpg`);
-                const backdropPath = path.join('/tmp', `${title.replace(/ /g, "_")}_backdrop.jpg`);
+                // Construct message body
+                const messageBody = `🎬 **Movie:** ${Title} (${Year})\n` +
+                                    `⏱️ **Runtime:** ${Runtime}\n` +
+                                    `🎭 **Genres:** ${Genre}\n` +
+                                    `🎬 **Director:** ${Director}\n` +
+                                    `🤼 **Actors:** ${Actors}\n` +
+                                    `⭐ **movie Rating:** ${imdbRating}\n` +
+                                    `📖 **Plot:** ${Plot}\n` +
+                                    `🏅 **Awards:** ${Awards}\n` +
+                                    `📊 **BoxOffice:** ${BoxOffice}`;
 
-                const downloadImage = async (url, filePath) => {
-                    const response = await axios({
-                        url,
-                        responseType: 'stream',
-                    });
-                    return new Promise((resolve, reject) => {
-                        const writer = fs.createWriteStream(filePath);
-                        response.data.pipe(writer);
-                        writer.on('finish', resolve);
-                        writer.on('error', reject);
-                    });
-                };
+                await api.sendMessage(messageBody, event.threadID);
 
-                const sendImage = async (url, filePath) => {
-                    await downloadImage(url, filePath);
-                    return message.reply({
-                        body: `🎬 Movie: ${title} (${year})\n` +
-                              `⏱️ Runtime: ${runtime}\n` +
-                              `🎭 Genres: ${genres}\n` +
-                              `🎬 Director: ${director}\n` +
-                              `🎭 Actors: ${actors}\n` +
-                              `⭐ IMDB Rating: ${movieData.imdbRating}\n` +
-                              `📖 Plot: ${plot}\n`,
-                        attachment: fs.createReadStream(filePath)
-                    });
-                };
+                if (Poster && Poster !== 'N/A') {
+                    console.log(`Fetching poster from: ${Poster}`);
+                    const posterResponse = await axios.get(Poster, { responseType: 'arraybuffer' });
+                    const buffer = Buffer.from(posterResponse.data, 'binary');
+                    const imagePath = path.join(__dirname, 'movie_poster.jpg');
+                    fs.writeFileSync(imagePath, buffer);
+                    console.log('Poster saved to:', imagePath);
 
-                if (posterUrl && posterUrl !== 'N/A') {
-                    await sendImage(posterUrl, posterPath);
-                } else if (backdropUrl) {
-                    await sendImage(backdropUrl, backdropPath);
+                    await api.sendMessage({
+                        body: '',
+                        attachment: fs.createReadStream(imagePath)
+                    }, event.threadID);
                 } else {
-                    return message.reply(
-                        `🎬 Movie: ${title} (${year})\n` +
-                        `⏱️ Runtime: ${runtime}\n` +
-                        `🎭 Genres: ${genres}\n` +
-                        `🎬 Director: ${director}\n` +
-                        `🎭 Actors: ${actors}\n` +
-                        `⭐ IMDB Rating: ${movieData.imdbRating}\n` +
-                        `📖 Plot: ${plot}`
-                    );
+                    console.log('No poster available for this movie.');
                 }
             } else {
-                return message.reply("Sorry, no information was found for the movie.");
+                console.log('No movie information found for:', movieTitle);
+                return api.sendMessage("Sorry, no information was found for the movie.", event.threadID);
             }
         } catch (error) {
-            console.error(error);
-            return message.reply("Sorry, there was an error fetching movie information.");
+            console.error('Error fetching movie information:', error.message);
+            if (error.response) {
+                console.error('Response data:', error.response.data);
+                console.error('Response status:', error.response.status);
+                console.error('Response headers:', error.response.headers);
+            }
+            return api.sendMessage("Sorry, there was an error fetching movie information.", event.threadID);
         }
     }
-}
+};
