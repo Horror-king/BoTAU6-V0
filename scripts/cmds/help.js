@@ -33,7 +33,7 @@ module.exports = {
 
     if (args.length === 0) {
       const categories = {};
-      let msg = "• Command List •\n";
+      let msg = "• AnitA Command List •\n";
 
       for (const [name, value] of commands) {
         if (value.config.role > 1 && role < value.config.role) continue;
@@ -53,7 +53,7 @@ module.exports = {
 
       msg += createColumns(firstHalfCategories, secondHalfCategories, categories);
 
-      msg += `\n•✨ | ©𝑮𝒓𝒊𝒍𝒍𝒆𝒅'𝒔 𝑨𝒊𝑩𝒐𝑻\n• Total Commands » ${commands.size}`;
+      msg += `\n•✨ | 𝑮𝒓𝒊𝒍𝒍𝒆𝒅'𝒔 𝑨𝒊𝑩𝒐𝑻\n• 𝗧𝗼𝘁𝗮𝗹 𝗖𝗼𝗺𝗺𝗮𝗻𝗱𝘀 » ${commands.size}`;
 
       await message.reply({ body: msg });
     } else {
@@ -70,7 +70,7 @@ module.exports = {
         const guideBody = configCommand.guide?.en || "No guide available.";
         const usage = guideBody.replace(/{p}/g, prefix).replace(/{n}/g, configCommand.name);
 
-        const response = `•「 COMMAND HELP 」•\n\n• Name: ${configCommand.name}\n• Author: ${author}\n• Aliases: ${configCommand.aliases ? configCommand.aliases.join(", ") : "None"}\n• Description: ${longDescription}\n• Usage: ${usage}\n• Role: ${roleText}`;
+        const response = `•「 𝗖𝗢𝗠𝗠𝗔𝗡𝗗 𝗛𝗘𝗟𝗣 」•\n\n• Name: ${configCommand.name}\n• Author: ${author}\n• Aliases: ${configCommand.aliases ? configCommand.aliases.join(", ") : "None"}\n• Description: ${longDescription}\n• Usage: ${usage}\n• Role: ${roleText}`;
 
         await message.reply(response);
       }
@@ -108,4 +108,4 @@ function roleTextToString(roleText) {
     default:
       return "Unknown role";
   }
-  
+}
