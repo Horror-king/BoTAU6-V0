@@ -1,48 +1,54 @@
 const axios = require('axios');
 
 module.exports = {
-    config: {
-        name: "weather2",
-        aliases: ['wt'],
-        author: "Hassan",
-        version: "1.0",
-        shortDescription: "Get current weather information",
-        longDescription: "Fetches current weather information for a specified city using the OpenWeatherMap API.",
-        category: "utility",
-        guide: {
-            vi: "",
-            en: ""
-        }
+  config: {
+    name: 'weather2',
+    aliases: ['wthr', 'forecast'],
+    author: 'Hassan',
+    version: '1.0',
+    shortDescription: 'Get weather information for a city',
+    longDescription: 'Fetch and display weather information for a specified city.',
+    category: 'utility',
+    guide: {
+      vi: '',
+      en: '',
     },
+  },
 
-    onStart: async function ({ args, message, getLang }) {
-        try {
-            const city = args.join(' ');
-            if (!city) {
-                return message.reply("Please provide a city name.");
-            }
+  onStart: async function ({ args, message, getLang }) {
+    try {
+      const cityName = args.join(' ');
+      if (!cityName) {
+        return message.reply('Please provide a city name.');
+      }
 
-            const apiKey = 'ce5048473491559fe3db75ee1432b127';
-            const url = `https://api.openweathermap.org/data/2.5/weather?q=${city}&appid=${apiKey}&units=metric`;
+      const url = `https://nodejs-2-jrqi.onrender.com/weather?city=${encodeURIComponent(cityName)}`;
 
-            message.reply('⏳Fetching weather data...');
+      const response = await axios.get(url);
 
-            const { data } = await axios.get(url);
+      if (response.data) {
+        const weatherData = response.data;
+        const city = weatherData.name;
+        const country = weatherData.sys.country;
+        const temperature = weatherData.main.temp;
+        const weatherDescription = weatherData.weather[0].description;
+        const humidity = weatherData.main.humidity;
+        const windSpeed = weatherData.wind.speed;
 
-            const weatherInfo = `
-                🌤️ Weather in ${data.name}, ${data.sys.country}:
-                - Temperature: ${data.main.temp}°C
-                - Weather: ${data.weather[0].description}
-                - Humidity: ${data.main.humidity}%
-                - Wind Speed: ${data.wind.speed} m/s
-            `;
+        const messageBody =
+          `🌆 **City:** ${city}, ${country}\n` +
+          `🌡️ **Temperature:** ${temperature}°C\n` +
+          `☁️ **Weather:** ${weatherDescription}\n` +
+          `💧 **Humidity:** ${humidity}%\n` +
+          `🌬️ **Wind Speed:** ${windSpeed} m/s`;
 
-            return message.reply(weatherInfo);
-        } catch (error) {
-            console.error(error);
-            if (error.response && error.response.status === 404) {
-                return message.reply("City not found. Please check the city name and try again.");
-            }
-            return message.reply("Sorry, I couldn't fetch the weather data. Please try again later.");
-        }
+        return message.reply(messageBody);
+      } else {
+        return message.reply('Sorry, no weather information was found for the specified city.');
+      }
+    } catch (error) {
+      console.error(error);
+      return message.reply('Sorry, there was an error fetching weather information.');
     }
+  },
+};
